@@ -22,13 +22,15 @@ export default class NewBill {
     const fileName = filePath[filePath.length-1]
 
     // Vérifier l'extension du fichier
-    const validExtensions = ['jpg', 'jpeg', 'png'];
-    const fileExtension = fileName.split('.').pop().toLowerCase();
-    console.log(file)
-    if (!validExtensions.includes(fileExtension)) {
-      alert('Seuls les fichiers .jpg, .jpeg et .png sont autorisés.');
+    const allowedExtensions = /(.jpg|.jpeg|.png)$/i;
+    if (!allowedExtensions.exec(e.target.value)) {
+      alert(
+        "Seuls les fichiers avec les extensions .jpg, .jpeg ou .png sont autorisés."
+      );
+      e.target.value = "";
       return;
     }
+    
     const formData = new FormData()
     const email = JSON.parse(localStorage.getItem("user")).email
     formData.append('file', file)
