@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { screen, waitFor } from "@testing-library/dom";
+import { screen, waitFor, fireEvent } from "@testing-library/dom";
 import NewBillUI from "../views/NewBillUI.js";
 import NewBill from "../containers/NewBill.js";
 import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
@@ -34,14 +34,96 @@ describe("Given I am connected as an employee", () => {
 
     describe("When employee upload a file", () => {
       describe("When the file is an image with png, jpeg or jpg extension", () => {
-        test("Then the file should be uploaded", () => {});
-      });
-      describe("When the file does not have the .png, .jpeg, or .jpg extension", () => {
-        test("Then the file shouldn't be uploaded", () => {});
+        test("Then the file should be uploaded", () => {
+          jest.spyOn(mockStore, "bills");
+
+          const onNavigate = (pathname) => {
+            document.body.innerHTML = ROUTES({ pathname });
+          };
+
+          Object.defineProperty(window, "localStorage", {
+            value: localStorageMock,
+          });
+          Object.defineProperty(window, "location", {
+            value: { hash: ROUTES_PATH["NewBill"] },
+          });
+          window.localStorage.setItem(
+            "user",
+            JSON.stringify({
+              type: "Employee",
+            })
+          );
+
+          const html = NewBillUI();
+          document.body.innerHTML = html;
+
+          const newBillInit = new NewBill({
+            document,
+            onNavigate,
+            store: mockStore,
+            localStorage: window.localStorage,
+          });
+
+          const handleChangeFile = jest.fn((e) =>
+            newBillInit.handleChangeFile(e)
+          );
+
+          const file = new File(["image"], "image.png", { type: "image/png" });
+          const billFile = screen.getByTestId("file");
+
+          billFile.addEventListener("change", handleChangeFile);
+          fireEvent.change(billFile, {
+            target: {
+              files: [file],
+            },
+          });
+
+          expect(billFile.files[0].name).toBeDefined();
+          expect(billFile.files[0]).toBe(file);
+          expect(billFile.files).toHaveLength(1);
+          expect(handleChangeFile).toHaveBeenCalled();
+          expect(handleChangeFile).toBeTruthy();
+        });
       });
     });
+    
     describe("When employee submit a bill", () => {
       test("Then a new bill should be created", () => {
+        jest.spyOn(mockStore, "bills");
+
+        const onNavigate = (pathname) => {
+          document.body.innerHTML = ROUTES({ pathname });
+        };
+
+        Object.defineProperty(window, "localStorage", {
+          value: localStorageMock,
+        });
+        Object.defineProperty(window, "location", {
+          value: { hash: ROUTES_PATH["NewBill"] },
+        });
+        window.localStorage.setItem(
+          "user",
+          JSON.stringify({
+            type: "Employee",
+          })
+        );
+
+        const html = NewBillUI();
+        document.body.innerHTML = html;
+
+        const newBillInit = new NewBill({
+          document,
+          onNavigate,
+          store: mockStore,
+          localStorage: window.localStorage,
+        });
+
+        const handleSubmit = jest.fn((e) => newBillInit.handleSubmit(e));
+        const formNewBill = screen.getByTestId("form-new-bill");
+        formNewBill.addEventListener("submit", handleSubmit);
+        fireEvent.submit(formNewBill);
+
+        expect(handleSubmit).toHaveBeenCalled();
       });
     });
   });
