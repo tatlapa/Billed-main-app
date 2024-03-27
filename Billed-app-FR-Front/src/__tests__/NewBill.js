@@ -86,7 +86,7 @@ describe("Given I am connected as an employee", () => {
         });
       });
     });
-    
+
     describe("When employee submit a bill", () => {
       test("Then a new bill should be created", () => {
         jest.spyOn(mockStore, "bills");
@@ -121,8 +121,6 @@ describe("Given I am connected as an employee", () => {
         const handleSubmit = jest.fn((e) => newBillInit.handleSubmit(e));
         const formNewBill = screen.getByTestId("form-new-bill");
         formNewBill.addEventListener("submit", handleSubmit);
-        fireEvent.submit(formNewBill);
-
         expect(handleSubmit).toHaveBeenCalled();
       });
     });
