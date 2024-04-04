@@ -9,6 +9,7 @@ import { ROUTES, ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import router from "../app/Router.js";
 import mockStore from "../__mocks__/store";
+import { bills } from "../fixtures/bills";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
@@ -57,71 +58,25 @@ describe("Given I am connected as an employee", () => {
           document,
           onNavigate,
           store: mockStore,
+          bills: bills,
           localStorage: window.localStorage,
         });
 
-        // //Test l.37 a 56
+        // Test l.37 a 56
 
-        // const fileName = "image_test.png";
-        // const formData = new FormData();
-        // const file = "image.png";
-        // const email = JSON.parse(localStorage.getItem("user")).email;
-        // formData.append("file", file);
-        // formData.append("email", email);
-
-        // const mockCreate = jest.fn().mockResolvedValue({
-        //   fileUrl: 'https://test.com/image_test.png',
-        //   key: '123',
-        // });
-
-        // const mockList = jest.fn();
-
-        // mockStore.bills = jest.fn().mockReturnValue({
-        //   create: mockCreate,
-        //   list: mockList,
-        // });
-
-        // mockStore
-        // .bills()
-        // .create({
-        //   data: formData,
-        //   headers: {
-        //     noContentType: true,
-        //   },
-        // })
-        // .then(({ fileUrl, key }) => {
-        //   newBillInit.billId = key;
-        //   newBillInit.fileUrl = fileUrl;
-        //   newBillInit.fileName = fileName;
-        // })
-        // .catch((error) => console.error(error));
-
-        // expect(mockStore.bills).toHaveBeenCalled();
-        // expect(mockCreate).toHaveBeenCalledWith({
-        //   data: formData,
-        //   headers: {
-        //     noContentType: true,
-        //   },
-        // });
-        // expect(newBillInit.billId).toBe('123');
-        // expect(newBillInit.fileUrl).toBe('https://example.com/image.png');
-        // expect(newBillInit.fileName).toBe(fileName);
-
-        // //Fin du test l.37 a 56
-
-        const handleChangeFile = jest.fn((e) =>
+        const handleChangeFileMock = jest.fn((e) =>
           newBillInit.handleChangeFile(e)
         );
 
-        const pngFile = new File(["image"], "image.png", { type: "image/png" });
-        const jpgFile = new File(["image"], "image.jpg", { type: "image/jpg" });
-        const jpegFile = new File(["image"], "image.jpeg", {
+        const pngFile = new File(["image"], "test.png", { type: "image/png" });
+        const jpgFile = new File(["image"], "test.jpg", { type: "image/jpg" });
+        const jpegFile = new File(["image"], "test.jpeg", {
           type: "image/jpeg",
         });
 
         const billFile = screen.getByTestId("file");
 
-        billFile.addEventListener("change", handleChangeFile);
+        billFile.addEventListener("change", handleChangeFileMock);
         fireEvent.change(billFile, {
           target: {
             files: [pngFile, jpgFile, jpegFile],
@@ -135,8 +90,21 @@ describe("Given I am connected as an employee", () => {
         expect(billFile.files[1]).toBe(jpgFile);
         expect(billFile.files[2]).toBe(jpegFile);
         expect(billFile.files).toHaveLength(3);
-        expect(handleChangeFile).toHaveBeenCalled();
-        expect(handleChangeFile).toBeTruthy();
+        expect(handleChangeFileMock).toHaveBeenCalled();
+        expect(handleChangeFileMock).toBeTruthy();
+
+        const mockAlert = jest
+          .spyOn(window, "alert")
+          .mockImplementation(() => {});
+        const e = {
+          target: { value: "test.txt" },
+          preventDefault: jest.fn(),
+        };
+        handleChangeFileMock(e);
+        expect(mockAlert).toHaveBeenCalledWith(
+          "Seuls les fichiers avec les extensions .jpg, .jpeg ou .png sont autorisés."
+        );
+        mockAlert.mockRestore();
       });
     });
 
